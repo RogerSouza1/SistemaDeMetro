@@ -21,12 +21,20 @@ public class Caminho {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Caminho [Tempo de Viagem: ").append(tempoViagem).append(" minutos]: ");
+        sb.append("[Tempo de Viagem: ").append(tempoViagem).append(" estações]: ");
         for (Vertice vertice : vertices) {
             sb.append(vertice).append(" -> ");
         }
         sb.delete(sb.length() - 4, sb.length());
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null || getClass() != obj.getClass()) return false;
+    Caminho caminho = (Caminho) obj;
+    return vertices.equals(caminho.vertices);
     }
 
 }

@@ -11,24 +11,33 @@ public class Grafo {
     }
 
     public void adicionarEstacao(String nomeEstacao) {
-        estacoes.add(new Vertice(nomeEstacao));
+        if (buscarEstacao(nomeEstacao) != null) {
+            throw new IllegalArgumentException("Estação já existente");
+        } else {
+            estacoes.add(new Vertice(nomeEstacao));
+        }
     }
 
     public void adicionarConexao(double tempoViagem, String nomeEstacaoInicio, String nomeEstacaoFim) {
         Vertice inicio = buscarEstacao(nomeEstacaoInicio);
         Vertice fim = buscarEstacao(nomeEstacaoFim);
 
-        if (inicio != null && fim != null) {
-            conexoes.add(new Aresta(tempoViagem, inicio, fim));
+        if (inicio == null || fim == null) {
+            throw new IllegalArgumentException("Estação de origem ou destino não encontrada");
+        }
+
+        Aresta novaConexao = new Aresta(tempoViagem, inicio, fim);
+        if (!conexoes.contains(novaConexao)) {
+            conexoes.add(novaConexao);
             conexoes.add(new Aresta(tempoViagem, fim, inicio));
         } else {
-            throw new IllegalArgumentException("Estação de origem ou destino não encontrada");
+            throw new IllegalArgumentException("Conexão já existente");
         }
     }
 
     public ArrayList<Caminho> escontrar5CaminhosMaisRapidos(String nomeEstacaoOrigem, String nomeEstacaoDestino) {
         ArrayList<Caminho> caminhos = encontrarTodosOsCaminhosMaisRapidos(nomeEstacaoOrigem, nomeEstacaoDestino);
-        if (caminhos == null || caminhos.isEmpty()) {
+        if (caminhos.isEmpty()) {
             System.out.printf("Não foi possível encontrar caminho entre as estações: %s e %s%n", nomeEstacaoOrigem, nomeEstacaoDestino);
         }
 
@@ -48,7 +57,7 @@ public class Grafo {
         boolean[] visitados = new boolean[estacoes.size()];
 
         // Inicia a busca em profundidade
-        dfs(origem, destino, 0, todosCaminhos, caminhoAtual, visitados);
+        buscaEmProfundidade(origem, destino, 0, todosCaminhos, caminhoAtual, visitados);
 
         // Ordena os caminhos pelo tempo de viagem
         todosCaminhos.sort(Comparator.comparingDouble(Caminho::getTempoViagem));
@@ -56,28 +65,32 @@ public class Grafo {
         return todosCaminhos;
     }
 
-    private void dfs(Vertice atual, Vertice destino, double tempoAtual, ArrayList<Caminho> todosCaminhos, ArrayList<Vertice> caminhoAtual, boolean[] visitados) {
-        // Adiciona o vértice atual ao caminho atual
-        caminhoAtual.add(atual);
-        visitados[estacoes.indexOf(atual)] = true;
+    private void buscaEmProfundidade(Vertice atual, Vertice destino, double tempoAtual, ArrayList<Caminho> todosCaminhos, ArrayList<Vertice> caminhoAtual, boolean[] visitados) {
+    // Adiciona o vértice atual ao caminho atual
+    caminhoAtual.add(atual);
+    visitados[estacoes.indexOf(atual)] = true;
 
-        // Se chegarmos ao destino, adicionamos o caminho atual à lista de caminhos
-        if (atual.equals(destino)) {
-            todosCaminhos.add(new Caminho(new ArrayList<>(caminhoAtual), tempoAtual));
-        } else {
-            // Continua a busca em profundidade
-            for (Aresta aresta : getConexoesSaindoDe(atual)) {
-                if (!visitados[estacoes.indexOf(aresta.getFim())]) {
-                    double tempoViagem = aresta.getTempoViagem();
-                    dfs(aresta.getFim(), destino, tempoAtual + tempoViagem, todosCaminhos, caminhoAtual, visitados);
-                }
+    // Se chegarmos ao destino, adicionamos o caminho atual à lista de caminhos
+    if (atual.equals(destino)) {
+        todosCaminhos.add(new Caminho(new ArrayList<>(caminhoAtual), tempoAtual)); // cria um clone do caminhoAtual
+    } else {
+        // Continua a busca em profundidade
+        for (Aresta aresta : getConexoesSaindoDe(atual)) {
+            if (!visitados[estacoes.indexOf(aresta.getFim())]) {
+                double tempoViagem = aresta.getTempoViagem();
+                buscaEmProfundidade(aresta.getFim(), destino, tempoAtual + tempoViagem, todosCaminhos, caminhoAtual, visitados);
             }
         }
+    }
 
-        // Remove o vértice atual do caminho atual e marca como não visitado
-        caminhoAtual.remove(caminhoAtual.size() - 1);
+    // Remove o vértice atual do caminho atual e marca como não visitado
+    if (!caminhoAtual.isEmpty()) {
+        caminhoAtual.removeLast();
+    }
+    if (estacoes.contains(atual)) {
         visitados[estacoes.indexOf(atual)] = false;
     }
+}
 
 
     private ArrayList<Aresta> getConexoesSaindoDe(Vertice vertice) {
@@ -89,19 +102,6 @@ public class Grafo {
             }
         }
         return conexoesSaindoDe;
-    }
-
-    private int encontrarProximoVertice(double[] distancias, boolean[] visitados) {
-        double minDistancia = Double.MAX_VALUE;
-        int minIndex = -1;
-
-        for (int i = 0; i < distancias.length; i++) {
-            if (!visitados[i] && distancias[i] < minDistancia) {
-                minDistancia = distancias[i];
-                minIndex = i;
-            }
-        }
-        return minIndex == -1 ? Integer.MAX_VALUE : minIndex;
     }
 
     private Vertice buscarEstacao(String nomeEstacao) {

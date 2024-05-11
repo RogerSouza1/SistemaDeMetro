@@ -9,10 +9,6 @@ public class Vertice {
         return nomeEstacao;
     }
 
-    public void setNomeEstacao(String nomeEstacao) {
-        this.nomeEstacao = nomeEstacao;
-    }
-
     @Override
     public String toString(){
         return nomeEstacao;
