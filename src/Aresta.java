@@ -13,23 +13,11 @@ public class Aresta {
         return tempoViagem;
     }
 
-    public void setTempoViagem(double tempoViagem) {
-        this.tempoViagem = tempoViagem;
-    }
-
     public Vertice getInicio() {
         return inicio;
     }
 
-    public void setInicio(Vertice inicio) {
-        this.inicio = inicio;
-    }
-
     public Vertice getFim() {
         return fim;
-    }
-
-    public void setFim(Vertice fim) {
-        this.fim = fim;
     }
 }
